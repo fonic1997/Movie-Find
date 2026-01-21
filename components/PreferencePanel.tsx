@@ -7,7 +7,6 @@ interface Props {
   setPrefs: React.Dispatch<React.SetStateAction<UserPreferences>>;
 }
 
-// A more comprehensive list of major film-producing countries
 const countries = [
   "India", "USA", "UK", "South Korea", "Japan", "France", "China", "Nigeria", 
   "Spain", "Germany", "Italy", "Canada", "Australia", "Brazil", "Mexico", 
@@ -18,7 +17,6 @@ export const PreferencePanel: React.FC<Props> = ({ prefs, setPrefs }) => {
   const handleChange = (field: keyof UserPreferences, value: string) => {
     setPrefs(prev => {
       const newState = { ...prev, [field]: value };
-      // Reset industry if location changes
       if (field === 'location') {
         newState.industry = '';
       }
@@ -43,17 +41,17 @@ export const PreferencePanel: React.FC<Props> = ({ prefs, setPrefs }) => {
           'Bengali Cinema'
         ];
       case 'USA':
-        return ['Hollywood', 'Independent Cinema'];
+        return ['Hollywood (California)', 'Independent Cinema'];
       case 'South Korea':
         return ['Hallyu (K-Cinema)', 'Independent'];
       case 'Nigeria':
-        return ['Nollywood'];
+        return ['Nollywood (English/Local)'];
       case 'Japan':
-        return ['Anime', 'J-Cinema'];
+        return ['Anime', 'J-Cinema (Japanese)'];
       case 'UK':
         return ['British Cinema', 'BBC Films'];
       case 'France':
-        return ['French New Wave Style', 'Modern French'];
+        return ['French New Wave Style', 'Modern French Cinema'];
       default:
         return [`${prefs.location} National Cinema`, 'Hollywood (International)', 'Regional Indie'];
     }
@@ -66,7 +64,6 @@ export const PreferencePanel: React.FC<Props> = ({ prefs, setPrefs }) => {
       <h2 className="text-xl font-bold text-blue-400 border-b border-white/10 pb-2">Preferences</h2>
       
       <div className="space-y-4">
-        {/* Location Selection */}
         <div>
           <label className="block text-xs font-medium text-slate-400 mb-1 uppercase tracking-wider">User Location</label>
           <select 
@@ -79,7 +76,6 @@ export const PreferencePanel: React.FC<Props> = ({ prefs, setPrefs }) => {
           </select>
         </div>
 
-        {/* Industry Selection - Hidden or Disabled until Location selected */}
         <div>
           <label className={`block text-xs font-medium mb-1 uppercase tracking-wider ${!prefs.location ? 'text-slate-600' : 'text-slate-400'}`}>Industry</label>
           <select 

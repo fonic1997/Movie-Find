@@ -2,6 +2,8 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { UserPreferences, MovieAnalysis } from "../types";
 
+// Note: In a real-world production app, it is highly recommended to call the Gemini API 
+// through a backend/serverless function to keep the API key hidden from the client browser.
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
 
 const SYSTEM_INSTRUCTION = `You are an AI-powered Movie Review and Recommendation Assistant.
@@ -17,6 +19,10 @@ Rules:
 8. If data is limited, say "Based on available signals".`;
 
 export const analyzeMovie = async (query: string, prefs: UserPreferences): Promise<string> => {
+  if (!process.env.API_KEY) {
+    throw new Error("API Key is missing. Please configure the API_KEY environment variable in your deployment settings.");
+  }
+
   const model = 'gemini-3-pro-preview';
   const prompt = `
     User Query: "${query}"
