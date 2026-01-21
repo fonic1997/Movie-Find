@@ -1,10 +1,6 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { UserPreferences, MovieAnalysis } from "../types";
-
-// Note: In a real-world production app, it is highly recommended to call the Gemini API 
-// through a backend/serverless function to keep the API key hidden from the client browser.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+import { UserPreferences } from "../types";
 
 const SYSTEM_INSTRUCTION = `You are an AI-powered Movie Review and Recommendation Assistant.
 Role: Analyze movies using patterns from IMDb, Rotten Tomatoes, and Metacritic.
@@ -19,15 +15,22 @@ Rules:
 8. If data is limited, say "Based on available signals".`;
 
 export const analyzeMovie = async (query: string, prefs: UserPreferences): Promise<string> => {
-  if (!process.env.API_KEY) {
-    throw new Error("API Key is missing. Please configure the API_KEY environment variable in your deployment settings.");
+  // In Vercel, API_KEY must be set in Environment Variables.
+  // We check this at runtime to avoid breaking the UI during the loading phase.
+  const apiKey = process.env.API_KEY;
+
+  if (!apiKey) {
+    throw new Error("API_KEY is not defined. Please add it to your Vercel Environment Variables.");
   }
 
+  // Initialize inside the function to ensure process.env is captured correctly at call time
+  const ai = new GoogleGenAI({ apiKey });
   const model = 'gemini-3-pro-preview';
+  
   const prompt = `
     User Query: "${query}"
     Context:
-    - User Location: ${prefs.location} (Prioritize results available in this region)
+    - User Location: ${prefs.location}
     - Industry: ${prefs.industry}
     - Platform: ${prefs.platform}
     - Preferred Genre: ${prefs.genre}
@@ -41,78 +44,83 @@ export const analyzeMovie = async (query: string, prefs: UserPreferences): Promi
     Always provide the analysis in a structured JSON format.
   `;
 
-  const response = await ai.models.generateContent({
-    model,
-    contents: prompt,
-    config: {
-      systemInstruction: SYSTEM_INSTRUCTION,
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          overview: {
-            type: Type.OBJECT,
-            properties: {
-              title: { type: Type.STRING },
-              industry: { type: Type.STRING },
-              genre: { type: Type.STRING },
-              runtime: { type: Type.STRING },
-              availableOn: { type: Type.STRING },
-            },
-            required: ["title", "industry", "genre", "runtime", "availableOn"]
-          },
-          ratings: {
-            type: Type.OBJECT,
-            properties: {
-              overall: { type: Type.STRING },
-              audience: { type: Type.STRING },
-              critic: { type: Type.STRING },
-            },
-            required: ["overall", "audience", "critic"]
-          },
-          review: {
-            type: Type.OBJECT,
-            properties: {
-              summary: { type: Type.STRING },
-              strengths: { type: Type.ARRAY, items: { type: Type.STRING } },
-              weaknesses: { type: Type.ARRAY, items: { type: Type.STRING } },
-              whoWatch: { type: Type.STRING },
-              whoSkip: { type: Type.STRING },
-            },
-            required: ["summary", "strengths", "weaknesses", "whoWatch", "whoSkip"]
-          },
-          sentiment: {
-            type: Type.OBJECT,
-            properties: {
-              positiveThemes: { type: Type.ARRAY, items: { type: Type.STRING } },
-              complaints: { type: Type.ARRAY, items: { type: Type.STRING } },
-              mood: { type: Type.STRING },
-            },
-            required: ["positiveThemes", "complaints", "mood"]
-          },
-          verdict: {
-            type: Type.OBJECT,
-            properties: {
-              worth: { type: Type.STRING },
-              bestFor: { type: Type.STRING },
-            },
-            required: ["worth", "bestFor"]
-          },
-          recommendations: {
-            type: Type.ARRAY,
-            items: {
+  try {
+    const response = await ai.models.generateContent({
+      model,
+      contents: prompt,
+      config: {
+        systemInstruction: SYSTEM_INSTRUCTION,
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            overview: {
               type: Type.OBJECT,
               properties: {
                 title: { type: Type.STRING },
-                reason: { type: Type.STRING }
+                industry: { type: Type.STRING },
+                genre: { type: Type.STRING },
+                runtime: { type: Type.STRING },
+                availableOn: { type: Type.STRING },
+              },
+              required: ["title", "industry", "genre", "runtime", "availableOn"]
+            },
+            ratings: {
+              type: Type.OBJECT,
+              properties: {
+                overall: { type: Type.STRING },
+                audience: { type: Type.STRING },
+                critic: { type: Type.STRING },
+              },
+              required: ["overall", "audience", "critic"]
+            },
+            review: {
+              type: Type.OBJECT,
+              properties: {
+                summary: { type: Type.STRING },
+                strengths: { type: Type.ARRAY, items: { type: Type.STRING } },
+                weaknesses: { type: Type.ARRAY, items: { type: Type.STRING } },
+                whoWatch: { type: Type.STRING },
+                whoSkip: { type: Type.STRING },
+              },
+              required: ["summary", "strengths", "weaknesses", "whoWatch", "whoSkip"]
+            },
+            sentiment: {
+              type: Type.OBJECT,
+              properties: {
+                positiveThemes: { type: Type.ARRAY, items: { type: Type.STRING } },
+                complaints: { type: Type.ARRAY, items: { type: Type.STRING } },
+                mood: { type: Type.STRING },
+              },
+              required: ["positiveThemes", "complaints", "mood"]
+            },
+            verdict: {
+              type: Type.OBJECT,
+              properties: {
+                worth: { type: Type.STRING },
+                bestFor: { type: Type.STRING },
+              },
+              required: ["worth", "bestFor"]
+            },
+            recommendations: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  title: { type: Type.STRING },
+                  reason: { type: Type.STRING }
+                }
               }
             }
-          }
-        },
-        required: ["overview", "ratings", "review", "sentiment", "verdict"]
+          },
+          required: ["overview", "ratings", "review", "sentiment", "verdict"]
+        }
       }
-    }
-  });
+    });
 
-  return response.text;
+    return response.text || "{}";
+  } catch (error: any) {
+    console.error("Gemini API Error:", error);
+    throw new Error(error.message || "Failed to connect to AI service.");
+  }
 };
