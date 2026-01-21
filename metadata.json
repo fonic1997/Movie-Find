@@ -1,0 +1,5 @@
+{
+  "name": "Copy of CineLens AI Reviewer",
+  "description": "A sophisticated movie review and recommendation assistant that aggregates sentiments from major platforms like IMDb, Rotten Tomatoes, and Metacritic using Gemini AI.",
+  "requestFramePermissions": []
+}
