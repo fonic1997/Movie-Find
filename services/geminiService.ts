@@ -15,15 +15,14 @@ Rules:
 8. If data is limited, say "Based on available signals".`;
 
 export const analyzeMovie = async (query: string, prefs: UserPreferences): Promise<string> => {
-  // In Vercel, API_KEY must be set in Environment Variables.
-  // We check this at runtime to avoid breaking the UI during the loading phase.
-  const apiKey = process.env.API_KEY;
+  // Try to get API key from various common process locations
+  const apiKey = (typeof process !== 'undefined' && process.env && process.env.API_KEY) || 
+                 (window as any).process?.env?.API_KEY;
 
   if (!apiKey) {
-    throw new Error("API_KEY is not defined. Please add it to your Vercel Environment Variables.");
+    throw new Error("API_KEY environment variable is missing. Please add it to your Vercel Project Settings > Environment Variables.");
   }
 
-  // Initialize inside the function to ensure process.env is captured correctly at call time
   const ai = new GoogleGenAI({ apiKey });
   const model = 'gemini-3-pro-preview';
   
@@ -121,6 +120,6 @@ export const analyzeMovie = async (query: string, prefs: UserPreferences): Promi
     return response.text || "{}";
   } catch (error: any) {
     console.error("Gemini API Error:", error);
-    throw new Error(error.message || "Failed to connect to AI service.");
+    throw new Error(error.message || "Failed to connect to Gemini AI.");
   }
 };
