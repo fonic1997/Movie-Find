@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { UserPreferences, MovieAnalysis } from './types';
 import { PreferencePanel } from './components/PreferencePanel';
 import { AnalysisCard } from './components/AnalysisCard';
@@ -19,14 +19,6 @@ const App: React.FC = () => {
     time: 'Normal'
   });
 
-  // Debug check for API Key presence in console (safely)
-  useEffect(() => {
-    const key = (typeof process !== 'undefined' && process.env?.API_KEY) || (window as any).process?.env?.API_KEY;
-    if (!key) {
-      console.warn("CineLens AI: API_KEY is missing from environment variables.");
-    }
-  }, []);
-
   const handleAnalyze = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!query.trim()) return;
@@ -44,7 +36,7 @@ const App: React.FC = () => {
       setAnalysis(data);
     } catch (err: any) {
       console.error(err);
-      setError(err.message || "An unexpected error occurred. Verify your API_KEY is set in Vercel.");
+      setError(err.message || "An unexpected error occurred. Verify your API_KEY is correctly set.");
     } finally {
       setLoading(false);
     }
@@ -52,12 +44,10 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen hero-gradient text-slate-200 flex flex-col md:flex-row w-full">
-      {/* Sidebar */}
       <aside className="w-full md:w-80 md:h-screen md:sticky md:top-0 z-20 md:border-r border-white/10 shrink-0 bg-slate-900/80 backdrop-blur-md">
         <PreferencePanel prefs={prefs} setPrefs={setPrefs} />
       </aside>
 
-      {/* Main Content */}
       <main className="flex-1 flex flex-col p-6 md:p-10 lg:p-16 max-w-full overflow-x-hidden">
         <header className="mb-10 animate-in fade-in slide-in-from-top-4 duration-700">
           <div className="flex items-center gap-4 mb-3">
@@ -103,7 +93,7 @@ const App: React.FC = () => {
               <div className="bg-rose-500/10 border border-rose-500/20 p-4 rounded-2xl flex items-start gap-4">
                 <span className="text-2xl mt-0.5">⚠️</span>
                 <div>
-                  <h4 className="text-rose-400 font-bold text-sm">Deployment Configuration Error</h4>
+                  <h4 className="text-rose-400 font-bold text-sm">Operation Failed</h4>
                   <p className="text-rose-400/70 text-xs mt-1 leading-relaxed">{error}</p>
                 </div>
               </div>
@@ -122,7 +112,7 @@ const App: React.FC = () => {
               </div>
               <div className="text-center">
                 <p className="text-white font-bold tracking-tight">Lens is focusing...</p>
-                <p className="text-slate-500 text-sm mt-1">Scanning IMDb, Rotten Tomatoes & Metacritic</p>
+                <p className="text-slate-500 text-sm mt-1">Scanning Global Movie Signals</p>
               </div>
             </div>
           ) : analysis ? (
@@ -135,18 +125,14 @@ const App: React.FC = () => {
                 </svg>
               </div>
               <h3 className="text-xl font-bold text-slate-400">Ready to Analyze</h3>
-              <p className="text-slate-500 max-w-sm mx-auto mt-2 text-sm">Select your streaming preferences in the sidebar and enter a title to begin your cinematic journey.</p>
+              <p className="text-slate-500 max-w-sm mx-auto mt-2 text-sm">Select your industry and streaming preferences, then enter a title to get insights.</p>
             </div>
           )}
         </section>
 
         <footer className="mt-20 py-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="text-[10px] text-slate-600 tracking-widest uppercase font-bold">
-            CineLens Engine v1.0 • Built with Gemini AI
-          </div>
-          <div className="flex gap-6">
-            <span className="text-[10px] text-slate-500">Powered by Google Flash 2.5</span>
-            <span className="text-[10px] text-slate-500">Real-time Sentiment Aggregation</span>
+            CineLens Engine • Powered by Gemini AI
           </div>
         </footer>
       </main>

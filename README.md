@@ -1,20 +1,48 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
 
-# Run and deploy your AI Studio app
+# CineLens AI - Movie Review & Recommendation Assistant
 
-This contains everything you need to run your app locally.
+CineLens AI is a sophisticated movie analysis tool powered by Google Gemini AI. It aggregates sentiments from major platforms like IMDb, Rotten Tomatoes, and Metacritic to provide detailed insights, weighted reviews, and personalized recommendations.
 
-View your app in AI Studio: https://ai.studio/apps/drive/1CcPHI9ewmyCsmOIGS-g1TicaaWgzqF41
+## Features
 
-## Run Locally
+- **Multi-Platform Sentiment Analysis**: Aggregates data patterns to identify consistent strengths and weaknesses.
+- **Localized Availability**: Checks streaming availability based on your selected region.
+- **Industry Specificity**: Tailors insights for Hollywood, Bollywood, Hallyu, and more.
+- **Advanced Recommendations**: Suggests movies based on mood and time availability.
 
-**Prerequisites:**  Node.js
+## Tech Stack
 
+- **Frontend**: React 19, TypeScript, Tailwind CSS
+- **AI Engine**: Google Gemini API (`gemini-3-pro-preview`)
+- **Build Tool**: Vite
+- **Deployment**: Vercel
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## Getting Started
+
+1. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
+
+2. **Set Up Environment Variables**:
+   Create a `.env` file in the root directory and add your Gemini API key:
+   ```env
+   API_KEY=your_gemini_api_key_here
+   ```
+
+3. **Run Locally**:
+   ```bash
+   npm run dev
+   ```
+
+4. **Build for Production**:
+   ```bash
+   npm run build
+   ```
+
+## Deployment on Vercel
+
+1. Push this code to a GitHub repository.
+2. Import the project in Vercel.
+3. Add the `API_KEY` environment variable in the Vercel Project Settings.
+4. Deploy!

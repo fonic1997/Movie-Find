@@ -2,44 +2,28 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { UserPreferences } from "../types";
 
-const SYSTEM_INSTRUCTION = `You are an AI-powered Movie Review and Recommendation Assistant.
+export const analyzeMovie = async (query: string, prefs: UserPreferences): Promise<string> => {
+  // Always initialize with the key from process.env.API_KEY
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  
+  const systemInstruction = `You are an AI-powered Movie Review and Recommendation Assistant.
 Role: Analyze movies using patterns from IMDb, Rotten Tomatoes, and Metacritic.
 Rules:
 1. Aggregate and normalize ratings internally.
 2. Weight consistent opinions and repeated themes higher.
 3. Detect sentiment accurately.
 4. Strict output format as JSON.
-5. Check movie availability for the user's selected location.`;
+5. Check movie availability for the user's selected location: ${prefs.location}.`;
 
-export const analyzeMovie = async (query: string, prefs: UserPreferences): Promise<string> => {
-  // Use the environment variable injected by the hosting provider
-  const apiKey = process.env.API_KEY;
-
-  if (!apiKey) {
-    throw new Error("API_KEY is missing. Add 'API_KEY' to your Environment Variables in your deployment dashboard (e.g., Vercel Settings).");
-  }
-
-  // Initialize the AI client inside the call to ensure fresh environment access
-  const ai = new GoogleGenAI({ apiKey });
-  
-  const prompt = `
-    User Query: "${query}"
-    Location: ${prefs.location}
-    Industry: ${prefs.industry}
-    Platform: ${prefs.platform}
-    Genre Preference: ${prefs.genre}
-    Mood: ${prefs.mood}
-    Duration: ${prefs.time}
-
-    Return a comprehensive analysis in JSON format.
-  `;
+  const prompt = `Analyze the following movie or query: "${query}". 
+User Preferences: Location=${prefs.location}, Industry=${prefs.industry}, Platform=${prefs.platform}, Mood=${prefs.mood}, Duration=${prefs.time}.`;
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-3-pro-preview',
+      model: "gemini-3-pro-preview",
       contents: prompt,
       config: {
-        systemInstruction: SYSTEM_INSTRUCTION,
+        systemInstruction,
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
@@ -108,13 +92,10 @@ export const analyzeMovie = async (query: string, prefs: UserPreferences): Promi
       }
     });
 
-    if (!response || !response.text) {
-      throw new Error("The AI returned an empty response.");
-    }
-
-    return response.text;
+    // Directly access the .text property as per guidelines
+    return response.text || "{}";
   } catch (error: any) {
     console.error("Gemini API Error:", error);
-    throw new Error(error.message || "Failed to connect to Gemini AI. Check console for details.");
+    throw new Error(error.message || "Failed to connect to Gemini AI.");
   }
 };
